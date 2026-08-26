@@ -1,5 +1,23 @@
 # Overview
 
+## What are filters 
+
+Learning from false positives enables the AQF to provide **robust false positive
+rate** guarantees: The AQF guarantees that the observed false positive rate will
+never exceed the configured rate. 
+
+In contrast, although traditional filters are also configurable in their false
+positive rates, they cannot guarantee that the observed false positive rate will
+be within the the configured rate. 
+
+The reason traditional filters cannot provide such guarantees is due to repeated
+false positive queries. Each time a prior false positive rate query is repeated,
+traditional filters are guaranteed to repeat the mistake. On the other hand,
+with the help of some feedback and auxilliary data, Adaptive filters are able to
+update themselves to avoid repeating a prior false positive.
+
+
+
 
 Filters are probabilistic data structures that are used to check if an element
 is present in a set. 

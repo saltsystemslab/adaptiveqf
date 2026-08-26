@@ -22,4 +22,7 @@ obj/
 external/
 data/
 
-libqf.a
+libaqf.a
+liblltable.a
+libsplinterutil.a
+docs/site

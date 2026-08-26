@@ -18,10 +18,14 @@ struct QFilterConfig {
 struct QFilterQueryResult {
   int key_present;
   int minirun_rank;
-  int minirun_count;
+  int count;
   uint64_t hash;
-  uint64_t hash_index;
 };
+
+static inline uint64_t ceil_log2(uint64_t x) {
+  if (x <= 1) return 0;
+  return 64 - __builtin_clzll(x - 1);
+}
 
 template <typename ReverseMap>
 class AdaptiveQF {
@@ -36,6 +40,35 @@ public:
     reverseMap.init(config.reverse_map, config.qbits + config.rbits);
     fullPoint = config.max_load_factor * (1ULL << config.qbits);
     return 0;
+  }
+
+  // Compute q based on the expected number of elements, so the caller
+  // does not need to estimate the number of slots directly.
+  int initializeForCapacity(uint64_t numExpectedElements, size_t rbits,
+                            double max_load_factor, int hash_mode,
+                            ReverseMapConfig reverseMapConfig = {}) {
+    uint64_t num_slots = (uint64_t)((double)numExpectedElements / max_load_factor) + 1;
+    QFilterConfig cfg;
+    cfg.qbits = (size_t)ceil_log2(num_slots);
+    cfg.rbits = rbits;
+    cfg.max_load_factor = max_load_factor;
+    cfg.hash_mode = hash_mode;
+    cfg.reverse_map = reverseMapConfig;
+    return init(cfg);
+  }
+
+  // Initialize directly from the number of quotient bits, which sets the
+  // number of slots to 1 << qbits.
+  int initializeWithQBits(size_t qbits, size_t rbits,
+                          double max_load_factor, int hash_mode,
+                          ReverseMapConfig reverseMapConfig = {}) {
+    QFilterConfig cfg;
+    cfg.qbits = qbits;
+    cfg.rbits = rbits;
+    cfg.max_load_factor = max_load_factor;
+    cfg.hash_mode = hash_mode;
+    cfg.reverse_map = reverseMapConfig;
+    return init(cfg);
   }
 
   int bulkInsert(uint64_t *keys, uint64_t numKeys) {
@@ -61,21 +94,40 @@ public:
     uint8_t flags = (config.hash_mode == QF_HASH_NONE) ? QF_KEY_IS_HASH : 0;
     uint8_t minirun_rank;
     uint64_t hash;
-    uint64_t minirun_count = aqf_query(&qf, queryKey, &hash, &minirun_rank,
-                                        flags);
-    if (minirun_count > 0) {
+    uint64_t count = aqf_query(&qf, queryKey, &hash, &minirun_rank,
+                               flags);
+    if (count > 0) {
       result->key_present = 1;
-      result->minirun_count = minirun_count;
+      result->count = count;
     } else {
       result->key_present = 0;
     }
     result->hash = hash;
     result->minirun_rank = minirun_rank;
-    result->hash_index = 0;
     return 0;
   }
 
+  // Correct a false positive for queryKey, extending the fingerprint of the
+  // original key that caused the collision. One round of extension removes
+  // the false positive for one minirun rank. filterResult must describe a
+  // current false positive for queryKey (e.g. from queryFilter). Returns the
+  // number of rounds performed, or 0 if queryKey is not (longer) a false
+  // positive.
   int adapt(uint64_t queryKey, QFilterQueryResult *filterResult) {
+    int count = 0;
+    for (;;) {
+      if (!filterResult->key_present) break;
+      int ret = adaptOnce(queryKey, filterResult);
+      if (ret < 0) return ret;
+      count++;
+      queryFilter(queryKey, filterResult);
+    }
+    return count;
+  }
+
+  // Perform a single fingerprint extension for queryKey. Requires
+  // result to describe a current false positive for queryKey.
+  int adaptOnce(uint64_t queryKey, QFilterQueryResult *filterResult) {
     if (aqf_get_noccupied_slots(&qf) >= fullPoint) {
       return -1;
     }

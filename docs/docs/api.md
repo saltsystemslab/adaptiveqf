@@ -78,9 +78,16 @@ template <typename ReverseMap>
 class AdaptiveQF {
 public:
   int init(QFilterConfig cfg);
+  int initializeForCapacity(uint64_t numExpectedElements, size_t rbits,
+                            double max_load_factor, int hash_mode,
+                            ReverseMapConfig reverse_map = {});
+  int initializeWithQBits(size_t qbits, size_t rbits,
+                          double max_load_factor, int hash_mode,
+                          ReverseMapConfig reverse_map = {});
   int bulkInsert(uint64_t *keys, uint64_t numKeys);
   int queryFilter(uint64_t key, QFilterQueryResult *result);
   int adapt(uint64_t key, QFilterQueryResult *result);
+  int adaptOnce(uint64_t key, QFilterQueryResult *result);
   int close();
 
   // Accessors
@@ -92,6 +99,17 @@ public:
   ReverseMap *getReverseMap();
 };
 ```
+
+`init` takes a fully-specified `QFilterConfig`, where `qbits` is the log2 of
+the number of slots. `initializeForCapacity` derives `qbits` from the expected
+number of elements and the max load factor; `initializeWithQBits` sets the
+number of slots directly to `1 << qbits`. Both construct the filter so callers
+do not need to manage the config struct manually.
+
+`adapt` corrects the false positive for `key` and returns the number of
+fingerprint extensions performed. `adaptOnce` performs a single extension.
+Both take a `QFilterQueryResult` (e.g. from `queryFilter`) describing the
+current false positive.
 
 ### `QFilterConfig`
 
@@ -134,6 +152,6 @@ struct ReverseMap {
 
 | Implementation | File | Storage | Persistence |
 |---|---|---|---|
-| `MockDB` | `reverse_maps/mock/mock_db.hpp` | `std::unordered_map` | None (volatile) |
+| `LocalMap` | `reverse_maps/localmap/localmap_db.hpp` | `std::unordered_map` | None (volatile) |
 | `SplinterDB` | `reverse_maps/splinterdb/splinter_reverse_map.hpp` | SplinterDB | Disk-backed |
 | `ll_table` | `reverse_maps/ll_table/` | In-memory hash table + linked lists | None (legacy C) |

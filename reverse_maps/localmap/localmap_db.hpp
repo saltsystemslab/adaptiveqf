@@ -1,5 +1,5 @@
-#ifndef MOCK_DB_H
-#define MOCK_DB_H
+#ifndef LOCALMAP_DB_H
+#define LOCALMAP_DB_H
 
 #include <cstdint>
 #include <string>
@@ -7,7 +7,7 @@
 #include <vector>
 #include "reverse_map_config.hpp"
 
-class MockDB {
+class LocalMap {
 public:
   int init(ReverseMapConfig config, int base_fingerprint_bits) {
     return 0;

@@ -22,11 +22,11 @@ key size and the implementation overhead. For a dataset of `N` keys of
 
 | Implementation | Location | Storage | Persistence |
 |---|---|---|---|
-| `MockDB` | `reverse_maps/mock/mock_db.hpp` | `std::unordered_map` | None (volatile) |
+| `LocalMap` | `reverse_maps/localmap/localmap_db.hpp` | `std::unordered_map` | None (volatile) |
 | `SplinterDB` | `reverse_maps/splinterdb/splinter_reverse_map.hpp` | SplinterDB | Disk-backed |
 | `ll_table` | `reverse_maps/ll_table/` | In-memory hash table + linked lists | None (legacy C) |
 
-**MockDB** is the simplest — an in-memory `std::unordered_map` mapping
+**LocalMap** is the simplest — an in-memory `std::unordered_map` mapping
 fingerprints to vectors of keys. Use it for testing and development.
 
 **SplinterDB** is a persistent key-value store that writes to disk. Use it

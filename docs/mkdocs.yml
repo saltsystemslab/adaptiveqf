@@ -24,9 +24,5 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Overview: overview.md
-  - Getting Started: getting-started.md
   - Building: building.md
-  - Reverse Maps: reverse-maps.md
-  - Quotient Filter: qf.md
-  - API Reference: api.md
+  - Getting Started: getting-started.md

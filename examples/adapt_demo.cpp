@@ -1,44 +1,43 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <algorithm>
 #include "aqf_wrapper.hpp"
-#include "mock_db.hpp"
+#include "localmap_db.hpp"
 
 int main() {
-  QFilterConfig cfg;
-  cfg.qbits = 12;
-  cfg.rbits = 8;
-  cfg.max_load_factor = 0.75;
-  cfg.hash_mode = QF_HASH_NONE;
-  cfg.reverse_map = {};
-
-  AdaptiveQF<MockDB> filter;
-  if (filter.init(cfg)) return 1;
+  AdaptiveQF<LocalMap> filter;
+  if (filter.initializeForCapacity(700, 8, 0.95, QF_HASH_NONE)) return 1;
 
   srand(42);
-  uint64_t keys[1000];
-  for (int i = 0; i < 1000; i++) keys[i] = ((uint64_t)rand() << 32) | rand();
-  filter.bulkInsert(keys, 1000);
-  printf("Inserted 1000 keys\n");
+  uint64_t keys[700];
+  for (int i = 0; i < 700; i++) keys[i] = ((uint64_t)rand() << 32) | rand();
+  filter.bulkInsert(keys, 700);
+  printf("Inserted 700 keys\n");
 
   for (int i = 0; i < 100000; i++) {
-    uint64_t q = ((uint64_t)rand() << 32) | rand();
-    QFilterQueryResult r;
-    filter.queryFilter(q, &r);
-    if (!r.key_present) continue;
+    uint64_t query = ((uint64_t)rand() << 32) | rand();
+    QFilterQueryResult result;
+    filter.queryFilter(query, &result);
 
+    if (!result.key_present) {
+      continue; // true negative — filter correctly says "not present"
+    }
+
+    // Scan the data set to confirm this is a false positive (O(n)).
+    if (std::find(keys, keys + 700, query) != keys + 700) {
+      continue; // true positive — filter correctly says "present"
+    }
+
+    // False positive — adapt to correct it.
     printf("False positive at query %d: key=%lx  rank=%d\n",
-           i, q, r.minirun_rank);
+           i, query, result.minirun_rank);
 
-    do {
-      filter.queryFilter(q, &r);
-      if (!r.key_present) break;
-      filter.adapt(q, &r);
-    } while (r.key_present);
+    int n = filter.adapt(query, &result);
 
     printf("  Adapted, key no longer a false positive\n");
-    filter.queryFilter(q, &r);
-    printf("  Re-query: present=%d\n", r.key_present);
+    filter.queryFilter(query, &result);
+    printf("  Re-query: present=%d\n", result.key_present);
     break;
   }
 

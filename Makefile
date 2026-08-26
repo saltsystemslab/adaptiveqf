@@ -44,7 +44,7 @@ CXXFLAGS = -Wall $(DEBUG) $(PROFILE) $(OPT) $(ARCH) -m64 \
 	-D_GNU_SOURCE
 
 LDFLAGS = $(DEBUG) $(PROFILE) $(OPT) \
-	-lpthread -lssl -lcrypto -lm \
+	-lpthread -lm \
 	-L$(SPLINTERPATH) -lsplinterdb -Wl,-rpath=$(SPLINTERPATH)
 
 # Core source files
