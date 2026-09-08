@@ -24,10 +24,10 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
+  - How the AQF works: how-it-works.md
   - Building: building.md
   - Getting Started: getting-started.md
   - API Reference: api.md
-  - How the AQF works: how-it-works.md
   - QF Internals: qf.md
   - Reverse Map: reverse-maps.md
   - Future Plans: future-plans.md
