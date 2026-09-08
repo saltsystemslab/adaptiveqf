@@ -26,3 +26,5 @@ libaqf.a
 liblltable.a
 libsplinterutil.a
 docs/site
+
+.venv/*

@@ -108,21 +108,17 @@ public:
   }
 
   // Correct a false positive for queryKey, extending the fingerprint of the
-  // original key that caused the collision. One round of extension removes
-  // the false positive for one minirun rank. filterResult must describe a
-  // current false positive for queryKey (e.g. from queryFilter). Returns the
-  // number of rounds performed, or 0 if queryKey is not (longer) a false
-  // positive.
+  // original key that caused the collision. filterResult must describe a
+  // current false positive for queryKey (e.g. from queryFilter). Returns 0 on
+  // success and a negative value on failure.
   int adapt(uint64_t queryKey, QFilterQueryResult *filterResult) {
-    int count = 0;
     for (;;) {
-      if (!filterResult->key_present) break;
+      if (!filterResult->key_present) return 0;
       int ret = adaptOnce(queryKey, filterResult);
       if (ret < 0) return ret;
-      count++;
+      if (ret == 0) return -1;
       queryFilter(queryKey, filterResult);
     }
-    return count;
   }
 
   // Perform a single fingerprint extension for queryKey. Requires

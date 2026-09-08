@@ -11,7 +11,7 @@ int main() {
   rm_cfg.overwrite = true;
 
   AdaptiveQF<SplinterDB> filter;
-  if (filter.initializeForCapacity(700, 8, 0.95, QF_HASH_NONE, rm_cfg)) {
+  if (filter.initializeForCapacity(700, 8, 0.95, QF_HASH_DEFAULT, rm_cfg)) {
     fprintf(stderr, "Failed to init filter with SplinterDB\n");
     return 1;
   }
@@ -31,7 +31,12 @@ int main() {
     printf("False positive at query %d: key=%lx  rank=%d\n",
            i, q, r.minirun_rank);
 
-    int n = filter.adapt(q, &r);
+    if (filter.adapt(q, &r) < 0) {
+      fprintf(stderr, "Failed to adapt false positive\n");
+      filter.close();
+      remove(rm_cfg.storage_path.c_str());
+      return 1;
+    }
 
     printf("  Adapted, key no longer a false positive\n");
     filter.queryFilter(q, &r);

@@ -94,10 +94,8 @@ static int run_aqf(const char *label, bool legacy, int qbits, int num_queries, d
                 ret, q);
         return 1;
       }
-      if (ret > 0) {
-        adapted_keys.insert(q);
-        adapted_count++;
-      }
+      adapted_keys.insert(q);
+      adapted_count++;
 
       filter.queryFilter(q, &result);
       if (result.key_present) {

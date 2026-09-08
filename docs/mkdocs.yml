@@ -23,6 +23,11 @@ markdown_extensions:
   - admonition
 
 nav:
-  - Home: index.md
+  - Overview: index.md
   - Building: building.md
   - Getting Started: getting-started.md
+  - API Reference: api.md
+  - How the AQF works: how-it-works.md
+  - QF Internals: qf.md
+  - Reverse Map: reverse-maps.md
+  - Future Plans: future-plans.md

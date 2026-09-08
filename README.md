@@ -48,13 +48,13 @@ optional external dependency described in the [building guide](docs/docs/buildin
 
 ## Documentation
 
-- [Overview](docs/docs/overview.md)
+- [Overview](docs/docs/index.md)
 - [Getting Started](docs/docs/getting-started.md)
 - [Building and Testing](docs/docs/building.md)
 - [How the Quotient Filter Works](docs/docs/qf.md)
 - [API Reference](docs/docs/api.md)
 - [Reverse Maps](docs/docs/reverse-maps.md)
-- [Project Roadmap](docs/docs/TODO.md)
+- [Future Plans](docs/docs/future-plans.md)
 
 ## Status and Roadmap
 

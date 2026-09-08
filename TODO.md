@@ -154,15 +154,14 @@ Tests will be re-added from scratch once the refactored structure is stable.
 
 ### Remove gqf.c dependency from callers
 
-- [ ] [TODO-P4] `reverse_maps/splinterdb/splinter_util.c` — currently calls
-      `qf_insert_using_ll_table`. Switch to `aqf_insert`.
-- [ ] [TODO-P4] `examples/adapt_demo.cpp` — legacy path uses `extern` declaration
-      for `qf_insert_using_ll_table`. Remove once gqf.c is gone.
+- [ ] [TODO-P4] `reverse_maps/splinterdb/splinter_util.c` — currently calls a
+      legacy CQF insertion path. Switch to `aqf_insert`.
+- [ ] [TODO-P4] `examples/adapt_demo.cpp` — legacy path uses an `extern`
+      declaration for a CQF insertion function. Remove once gqf.c is gone.
 - [ ] [TODO-P4] Remove `insert_aqf_copy` experiment from `gqf.c` (added during
       debugging, no longer needed).
 - [ ] [TODO-P4] Remove `extern` declarations from `aqf.c` that reference gqf.c
-      functions (`insert_and_extend`, `qf_get_count_using_ll_table`,
-      `qf_adapt_using_ll_table`).
+      functions once the legacy dependency is gone.
 
 ### Cleanup
 
@@ -177,8 +176,6 @@ Tests will be re-added from scratch once the refactored structure is stable.
       uses count=1, the `count > 1` path is dead code)
 - [ ] [TODO-P4] Encapsulate `qfblock` — replace direct struct access
       with accessor functions throughout aqf.c
-- [ ] [TODO-P4] Remove `#include "ll_table.h"` from aqf_int.h (no longer needed
-      once the SplinterDB reverse map is migrated)
 
 ### Resolve `src/gqf_backup.c`
 - [ ] [TODO-P4] [DEAD] Run: `diff src/gqf.c src/gqf_backup.c`
