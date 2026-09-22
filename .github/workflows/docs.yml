@@ -1,7 +1,7 @@
 name: Deploy docs
 on:
   push:
-    branches: [cleanup]
+    branches: [main]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
