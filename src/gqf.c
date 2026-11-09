@@ -1970,6 +1970,9 @@ void *qf_destroy(QF *qf)
 		free(qf->runtimedata->wait_times);
 	if (qf->runtimedata->f_info.filepath != NULL)
 		free(qf->runtimedata->f_info.filepath);
+	pc_destructor(&qf->runtimedata->pc_nelts);
+	pc_destructor(&qf->runtimedata->pc_ndistinct_elts);
+	pc_destructor(&qf->runtimedata->pc_noccupied_slots);
 	free(qf->runtimedata);
 
 	return (void*)qf->metadata;

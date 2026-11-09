@@ -836,6 +836,9 @@ static void *aqf_destroy(QF *qf)
 		free((void*)qf->runtimedata->locks);
 	if (qf->runtimedata->wait_times != NULL)
 		free(qf->runtimedata->wait_times);
+	pc_destructor(&qf->runtimedata->pc_nelts);
+	pc_destructor(&qf->runtimedata->pc_ndistinct_elts);
+	pc_destructor(&qf->runtimedata->pc_noccupied_slots);
 	free(qf->runtimedata);
 
 	return (void*)qf->metadata;
