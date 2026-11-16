@@ -13,10 +13,11 @@ else
 	SPLINTERPATH=external/splinterdb/build/debug/lib
 endif
 
-ifdef NH
-	ARCH=
-else
-	ARCH=-msse4.2 -D__SSE4_2_
+ifeq ($(shell uname -m),x86_64)
+	ARCH=-m64
+ifndef NH
+	ARCH+=-msse4.2 -D__SSE4_2_
+endif
 endif
 
 ifdef P
@@ -31,7 +32,7 @@ CC = gcc -std=gnu11
 CXX = g++ -std=c++17
 LD = gcc -std=gnu11
 
-CXXFLAGS = -Wall $(DEBUG) $(PROFILE) $(OPT) $(ARCH) -m64 \
+CXXFLAGS = -Wall $(DEBUG) $(PROFILE) $(OPT) $(ARCH) \
 	-I. \
 	-Iinclude \
 	-Ireverse_maps/ll_table \

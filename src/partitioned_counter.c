@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sched.h>
+#include <errno.h>
+#if defined(__linux__)
 #include <sys/sysinfo.h>
 #include <linux/unistd.h>
 #include <sys/syscall.h>
-#include <errno.h>
+#endif
 
 #include "partitioned_counter.h"
 
@@ -45,7 +47,11 @@ void pc_destructor(pc_t *pc)
 }
 	
 void pc_add(pc_t *pc, int64_t count) {
+#if defined(__linux__)
 	int cpuid = sched_getcpu();
+#else
+	int cpuid = 0; // sched_getcpu is Linux-only
+#endif
 	uint32_t counter_id = cpuid % pc->num_counters;
 	int64_t cur_count =
 		__atomic_add_fetch(&pc->local_counters[counter_id].counter, count,

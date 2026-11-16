@@ -64,12 +64,14 @@ void bp1(const QF *qf, uint64_t hash_bucket_index, uint64_t hash_bucket_offset, 
 	return;
 }
 
+#if defined(__x86_64__)
 static __inline__ unsigned long long rdtsc(void)
 {
 	unsigned hi, lo;
 	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
 	return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
 }
+#endif
 
 #ifdef LOG_WAIT_TIME
 static inline bool qf_spin_lock(QF *qf, volatile int *lock, uint64_t idx,
@@ -272,11 +274,15 @@ static void modify_metadata(pc_t *metadata, int cnt)
 
 static inline int popcnt(uint64_t val)
 {
+#if defined(__x86_64__)
 	asm("popcnt %[val], %[val]"
 			: [val] "+r" (val)
 			:
 			: "cc");
 	return val;
+#else
+	return __builtin_popcountll(val);
+#endif
 }
 
 static inline int64_t bitscanreverse(uint64_t val)
@@ -284,11 +290,15 @@ static inline int64_t bitscanreverse(uint64_t val)
 	if (val == 0) {
 		return -1;
 	} else {
+#if defined(__x86_64__)
 		asm("bsr %[val], %[val]"
 				: [val] "+r" (val)
 				:
 				: "cc");
 		return val;
+#else
+		return 63 - __builtin_clzll(val);
+#endif
 	}
 }
 
@@ -304,11 +314,7 @@ static inline int popcntv(const uint64_t val, int ignore)
 // Bits are numbered from 0
 static inline int bitrank(uint64_t val, int pos) {
 	val = val & ((2ULL << pos) - 1);
-	asm("popcnt %[val], %[val]"
-			: [val] "+r" (val)
-			:
-			: "cc");
-	return val;
+	return popcnt(val);
 }
 
 /**
