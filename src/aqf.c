@@ -588,10 +588,11 @@ static inline void shift_runends(QF *qf, int64_t first, uint64_t last, uint64_t 
 	METADATA_WORD(qf, extensions, 64*last_word) = shift_into_b(0, METADATA_WORD(qf, extensions, 64*last_word), bstart, bend, distance);
 }
 
-// insert — external dependency for count > 1 (not used by AQF, which always passes count=1)
-extern int insert_and_extend(QF *qf, uint64_t index, uint64_t key, uint64_t count,
-                              uint64_t other_key, uint64_t *ret_hash,
-                              uint64_t *ret_other_hash, uint8_t flags);
+// The count > 1 path called gqf.c's insert_and_extend with integers where pointers are
+// expected, which GCC 14 rejects. It is commented out until counting is reimplemented in aqf.c.
+// extern int insert_and_extend(QF *qf, uint64_t index, uint64_t key, uint64_t count,
+//                               uint64_t other_key, uint64_t *ret_hash,
+//                               uint64_t *ret_other_hash, uint8_t flags);
 
 // target_index is the index of the item's target bucket (this is used to update offset)
 // insert_index is the index to actually place the item
@@ -646,9 +647,9 @@ static inline int insert(QF *qf, qf_insert_result *result, uint64_t count, uint8
 		modify_metadata(&qf->runtimedata->pc_nelts, 1);
 #endif
 
-		if (count > 1) {
-			insert_and_extend(qf, hash_bucket_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
-		}
+		// if (count > 1) {
+		// 	insert_and_extend(qf, hash_bucket_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
+		// }
 	} else {
 		int64_t runstart_index = hash_bucket_index == 0 ? 0 : run_end(qf, hash_bucket_index - 1) + 1;
 
@@ -668,7 +669,7 @@ static inline int insert(QF *qf, qf_insert_result *result, uint64_t count, uint8
 			modify_metadata(&qf->runtimedata->pc_nelts, count);
 #endif
 
-			if (count > 1) insert_and_extend(qf, hash_bucket_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
+			// if (count > 1) insert_and_extend(qf, hash_bucket_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
 		} else {
 			uint64_t current_index = runstart_index, temp_index, temp_remainder, old_runend_index;
 			uint64_t current_remainder;
@@ -738,7 +739,7 @@ static inline int insert(QF *qf, qf_insert_result *result, uint64_t count, uint8
 			modify_metadata(&qf->runtimedata->pc_nelts, count);
 #endif
 
-			if (count > 1) insert_and_extend(qf, insert_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
+			// if (count > 1) insert_and_extend(qf, insert_index, result->hash, count - 1, result->hash, result->hash, result->hash, QF_KEY_IS_HASH | QF_NO_LOCK);
 		}
 	}
 
