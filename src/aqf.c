@@ -103,11 +103,15 @@ static inline void qf_unlock(QF *qf, uint64_t hash_bucket_index, bool small)
 
 static inline int popcnt(uint64_t val)
 {
+#if defined(__x86_64__)
 	asm("popcnt %[val], %[val]"
 			: [val] "+r" (val)
 			:
 			: "cc");
 	return val;
+#else
+	return __builtin_popcountll(val);
+#endif
 }
 
 static inline int64_t bitscanreverse(uint64_t val)
@@ -115,11 +119,15 @@ static inline int64_t bitscanreverse(uint64_t val)
 	if (val == 0) {
 		return -1;
 	} else {
+#if defined(__x86_64__)
 		asm("bsr %[val], %[val]"
 				: [val] "+r" (val)
 				:
 				: "cc");
 		return val;
+#else
+		return 63 - __builtin_clzll(val);
+#endif
 	}
 }
 
@@ -133,11 +141,7 @@ static inline int popcntv(const uint64_t val, int ignore)
 
 static inline int bitrank(uint64_t val, int pos) {
 	val = val & ((2ULL << pos) - 1);
-	asm("popcnt %[val], %[val]"
-			: [val] "+r" (val)
-			:
-			: "cc");
-	return val;
+	return popcnt(val);
 }
 
 /**
